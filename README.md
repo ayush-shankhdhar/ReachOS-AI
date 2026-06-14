@@ -1,4 +1,4 @@
-# 🚀 ReachOS AI
+#  ReachOS AI
 
 ### The AI-Native Operating System for Customer Engagement
 
