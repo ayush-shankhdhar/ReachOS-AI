@@ -64,7 +64,12 @@ export async function POST(request: NextRequest) {
         const customSegment = await Segment.findById(body.targetSegment);
         if (customSegment) {
           const query = buildMongoQuery(customSegment.rules);
-          audienceSize = await Customer.countDocuments({ ...query, status: 'active' });
+          const countQuery = { ...query };
+          const hasCustomStatus = customSegment.rules.some((rule: any) => rule.field === 'status');
+          if (!hasCustomStatus) {
+            countQuery.status = 'active';
+          }
+          audienceSize = await Customer.countDocuments(countQuery);
         }
       } else {
         audienceSize = await Customer.countDocuments({ segment: body.targetSegment, status: 'active' });

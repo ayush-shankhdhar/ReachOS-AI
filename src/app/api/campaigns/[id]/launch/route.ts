@@ -53,10 +53,13 @@ export async function POST(
 
     // Determine customer query based on targetSegment
     let filterQuery: Record<string, any> = {};
+    let hasCustomStatus = false;
+
     if (mongoose.Types.ObjectId.isValid(campaign.targetSegment)) {
       const customSegment = await Segment.findById(campaign.targetSegment);
       if (customSegment) {
         filterQuery = buildMongoQuery(customSegment.rules);
+        hasCustomStatus = customSegment.rules.some((rule: any) => rule.field === 'status');
       } else {
         return NextResponse.json({ success: false, message: 'Custom segment targeting not found' }, { status: 404 });
       }
@@ -64,8 +67,10 @@ export async function POST(
       filterQuery = { segment: campaign.targetSegment };
     }
 
-    // Always filter for active customers
-    filterQuery.status = 'active';
+    // Only filter for status: 'active' if status is not already specified in custom rules
+    if (!hasCustomStatus) {
+      filterQuery.status = 'active';
+    }
 
     const customers = await Customer.find(filterQuery).lean();
 
